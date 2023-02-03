@@ -1,0 +1,6 @@
+spring:
+  data:
+    mongodb:
+      uri: "mongodb://localhost:8020/distributed-locks"
+server:
+  port: 0

@@ -1,0 +1,27 @@
+# @name get value for "myKey"
+GET http://localhost:59575/base/read
+Accept: application/json
+Content-Type: application/json
+
+myKey
+
+###
+# @name put "myNewValue" to key "myKey"
+POST http://localhost:59646/base/put
+Content-Type: application/json
+
+{
+   "key": "myKey",
+   "value": "myNewValue"
+}
+###
+# @name put "myValue" to key "myKey"
+POST http://localhost:59575/base/put
+Content-Type: application/json
+
+{
+   "key": "myKey",
+   "value": "myValue"
+}
+
+###

@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  mongoDB:
+    image: mongo:5.0.14
+    restart: always
+    ports:
+      - "8020:27017"
+    extra_hosts:
+      - "localhost:0.0.0.0"
+    volumes:
+      - "./mongodb-data:/data/db"
+  mongo-express:
+    image: mongo-express:0.54.0
+    restart: always
+    ports:
+      - "8021:8081"
+    environment:
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+      ME_CONFIG_MONGODB_SERVER: mongoDB
