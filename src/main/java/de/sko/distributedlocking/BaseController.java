@@ -50,7 +50,6 @@ public class BaseController
    @GetMapping( "read" )
    ResponseEntity< String > readResource( @RequestBody String key )
    {
-      System.out.println(key);
       final var lock = lockRegistry.obtain( key );
       lock.lock();
       try {

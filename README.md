@@ -2,7 +2,7 @@
 
 ## What is locking?
 
-- with locking you regulate access to a specific resource
+- with locking you regulate concurrent access to a specific resource
     - e.g. Locking in Databases, depending on the type of lock only one session/transaction has access to a specific resource e.g.
       a table row or in worst case a complete table
     - only one collaborator can interact with a resource at a time
@@ -17,7 +17,7 @@
   - a shared resource may be:
     - a database
     - a cache
-    - anything more that one party has write access to
+    - anything more than one party has write access to
 
 ## Locking in a simple Java application
 
@@ -46,4 +46,3 @@
   - based on springs implementation
   - not much effort to implement it
   - not restricted to a database resource
-  - I tried this one and will show you now 
