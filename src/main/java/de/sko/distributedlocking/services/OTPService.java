@@ -37,6 +37,9 @@ public class OTPService
       }
    }
 
+   /**
+    * Maybe a bit too expensive to initialize {@link SecureRandom} for every OTP generation
+    */
    private String generateOTP()
    {
       final var secureRandom = new SecureRandom();
