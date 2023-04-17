@@ -1,16 +1,14 @@
 package de.sko.distributedlocking.config;
 
-import de.sko.distributedlocking.MyCache;
 import de.sko.distributedlocking.entities.Lock;
-import de.sko.distributedlocking.repositories.LockHandlerRepository;
-import de.sko.distributedlocking.repositories.LockRepository;
+import de.sko.distributedlocking.entities.OTP;
+import de.sko.distributedlocking.repositories.InternalMongoLockRepository;
+import de.sko.distributedlocking.repositories.MongoLockRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.springframework.data.mongodb.MongoDatabaseFactory;
-import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
@@ -31,26 +29,16 @@ public class ApplicationConfig
    }
 
    @Bean
-   public MyCache getCache()
+   @Qualifier( "otpLockRegistry" )
+   public JdbcLockRegistry getOtpLockRegistry( InternalMongoLockRepository internalRepository )
    {
-      return new MyCache();
-   }
+      var region = "OTP"; // only manage locks for "OTP" use case
+      var timeToLiveMillis = 60000L; // free lock in shared mongo collection after 60 seconds
 
-   @Bean
-   @Qualifier( "myCacheLockHandlerRepository" )
-   public LockHandlerRepository getMyCacheLockHandlerRepository( LockRepository lockRepository )
-   {
-      return new LockHandlerRepository( lockRepository, "MY_CACHE", 30000L );
-   }
-
-   @Bean
-   @Qualifier( "myCacheLockRegistry" )
-   public JdbcLockRegistry getMyCacheLockRegistry(
-      @Qualifier( "myCacheLockHandlerRepository" ) org.springframework.integration.jdbc.lock.LockRepository lockRepository
-   )
-   {
+      var lockRepository = new MongoLockRepository( internalRepository, region, timeToLiveMillis );
       return new JdbcLockRegistry( lockRepository );
    }
+
 
    @EventListener( ApplicationReadyEvent.class )
    public void index()
@@ -58,11 +46,6 @@ public class ApplicationConfig
       final var indexOperations = mongoTemplate.indexOps( Lock.class );
       final var indexResolver = new MongoPersistentEntityIndexResolver( mongoMappingContext );
       indexResolver.resolveIndexFor( Lock.class ).forEach( indexOperations::ensureIndex );
-   }
-
-   @Bean
-   public MongoTransactionManager transactionManager( MongoDatabaseFactory mongoDatabaseFactory )
-   {
-      return new MongoTransactionManager( ( mongoDatabaseFactory ) );
+      indexResolver.resolveIndexFor( OTP.class ).forEach( indexOperations::ensureIndex );
    }
 }

@@ -1,27 +1,28 @@
-# @name get value for "myKey"
-GET http://localhost:59575/base/read
+POST http://localhost:{{serverPort}}/otp/register-client
 Accept: application/json
 Content-Type: application/json
 
-myKey
+"sebs-client-1"
 
 ###
-# @name put "myNewValue" to key "myKey"
-POST http://localhost:59646/base/put
+# @name get
+GET http://localhost:{{serverPort}}/otp
+Accept: application/json
+Content-Type: application/json
+
+###
+# @name refresh
+POST http://localhost:{{serverPort}}/otp/refresh
+Accept: application/json
+Content-Type: application/json
+
+###
+# @name use
+POST http://localhost:{{serverPort}}/otp/use
+Accept: application/json
 Content-Type: application/json
 
 {
-   "key": "myKey",
-   "value": "myNewValue"
+   "clientId": "\"sebs-client-1\"",
+   "oneTimePassword": "131880"
 }
-###
-# @name put "myValue" to key "myKey"
-POST http://localhost:59575/base/put
-Content-Type: application/json
-
-{
-   "key": "myKey",
-   "value": "myValue"
-}
-
-###

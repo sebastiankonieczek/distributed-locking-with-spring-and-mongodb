@@ -3,7 +3,7 @@ package de.sko.distributedlocking.repositories;
 import de.sko.distributedlocking.entities.Lock;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface LockRepository
+public interface InternalMongoLockRepository
    extends MongoRepository< Lock, String >
 {
    void deleteAllByRegionAndClientId(

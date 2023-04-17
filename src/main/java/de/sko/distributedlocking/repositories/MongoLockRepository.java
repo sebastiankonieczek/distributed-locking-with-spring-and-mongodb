@@ -6,27 +6,26 @@ import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.integration.jdbc.lock.LockRepository;
 
-public class LockHandlerRepository
+public class MongoLockRepository
    implements LockRepository
 {
    private final String clientId;
-   private final de.sko.distributedlocking.repositories.LockRepository internalLockRepository;
+   private final InternalMongoLockRepository internalLockRepository;
    private final String region;
    private final Long ttlMillis;
 
-   public LockHandlerRepository(
-      final de.sko.distributedlocking.repositories.LockRepository internalLockRepository,
+   public MongoLockRepository(
+      final InternalMongoLockRepository internalInternalMongoLockRepository,
       final String region,
       final Long ttlMillis )
    {
 
-      this.internalLockRepository = internalLockRepository;
+      this.internalLockRepository = internalInternalMongoLockRepository;
       this.region = region;
       this.ttlMillis = ttlMillis;
       this.clientId = UUID.randomUUID().toString();
    }
 
-//   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
    @Override
    public boolean isAcquired( final String lock )
    {
@@ -37,7 +36,6 @@ public class LockHandlerRepository
       return internalLockRepository.existsByRegionAndClientIdAndLockKey( region, clientId, lock );
    }
 
-//   @Transactional(propagation = Propagation.REQUIRES_NEW)
    @Override
    public void delete( final String lock )
    {
@@ -54,7 +52,6 @@ public class LockHandlerRepository
       // not implemented
    }
 
-//   @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
    @Override
    public boolean acquire( final String lock )
    {
@@ -79,7 +76,6 @@ public class LockHandlerRepository
       return false;
    }
 
-//   @Transactional(propagation = Propagation.REQUIRES_NEW)
    @Override
    public void close()
    {
