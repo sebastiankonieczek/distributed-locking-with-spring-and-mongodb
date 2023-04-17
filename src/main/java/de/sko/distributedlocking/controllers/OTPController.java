@@ -1,10 +1,11 @@
 package de.sko.distributedlocking.controllers;
 
 
+import de.sko.distributedlocking.entities.OTPNextRefresh;
+import de.sko.distributedlocking.repositories.OTPNextRefreshRepository;
 import de.sko.distributedlocking.repositories.OTPRepository;
 import de.sko.distributedlocking.services.OTPService;
-import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collection;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,37 +20,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping( path = "otp", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE )
 class OTPController
 {
-   public static final int OTP_TTL = 60;
    private final OTPService otpService;
    private final OTPRepository otpRepository;
+   private final OTPNextRefreshRepository otpNextRefreshRepository;
 
    OTPController(
       OTPService otpService,
-      OTPRepository otpRepository )
+      OTPRepository otpRepository,
+      OTPNextRefreshRepository otpNextRefreshRepository )
    {
       this.otpService = otpService;
       this.otpRepository = otpRepository;
+      this.otpNextRefreshRepository = otpNextRefreshRepository;
    }
 
    @GetMapping
-   ResponseEntity< Collection< ClientOTP > > getOtps()
+   ResponseEntity< OTPs > getOtps()
    {
       final var response =
          otpRepository.findAll().stream().map( otp -> new ClientOTP( otp.getClientId(), otp.getOtp() ) ).toList();
 
-      return ResponseEntity.ok( response );
-   }
+      final var nextRefresh =
+         otpNextRefreshRepository.find()
+                                 .map( OTPNextRefresh::getNextRefresh )
+                                 .orElseThrow( () -> new IllegalStateException( "next refresh time not yet known" ) );
 
-   /**
-    * This would normally be an internal process where the expiry time is exposed to the clients.
-    * Maybe think about setting expire time from client.
-    */
-   @PostMapping( "refresh" )
-   ResponseEntity< NextRefresh > refresh()
-   {
-      otpService.refreshAll();
-      final var expiryTime = LocalDateTime.now( Clock.systemUTC() ).plusSeconds( OTP_TTL );
-      return ResponseEntity.ok( new NextRefresh( expiryTime ) );
+      return ResponseEntity.ok( new OTPs( response, nextRefresh ) );
    }
 
    @PostMapping( "register-client" )
@@ -76,9 +72,10 @@ class OTPController
 
    public record ClientOTP( String clientId, String oneTimePassword )
    {
+
    }
 
-   public record NextRefresh( LocalDateTime next )
+   public record OTPs( Collection< ClientOTP > otps, Instant nextRefresh )
    {
    }
 }

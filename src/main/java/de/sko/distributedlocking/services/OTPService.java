@@ -6,6 +6,7 @@ import de.sko.distributedlocking.repositories.OTPRepository;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.integration.jdbc.lock.JdbcLockRegistry;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ public class OTPService
    private final OTPRepository otpRepository;
 
    OTPService(
-      JdbcLockRegistry otpLockRegistry,
+      @Qualifier("otpLockRegistry") JdbcLockRegistry otpLockRegistry,
       OTPRepository otpRepository )
    {
       this.otpLockRegistry = otpLockRegistry;
@@ -71,10 +72,5 @@ public class OTPService
       finally {
          otpLock.unlock();
       }
-   }
-
-   public void refreshAll()
-   {
-      otpRepository.findAll().forEach( client -> updateOtp( client.getClientId() ) );
    }
 }

@@ -11,12 +11,6 @@ Accept: application/json
 Content-Type: application/json
 
 ###
-# @name refresh
-POST http://localhost:{{serverPort}}/otp/refresh
-Accept: application/json
-Content-Type: application/json
-
-###
 # @name use
 POST http://localhost:{{serverPort}}/otp/use
 Accept: application/json
@@ -24,5 +18,5 @@ Content-Type: application/json
 
 {
    "clientId": "\"sebs-client-1\"",
-   "oneTimePassword": "131880"
+   "oneTimePassword": "478121"
 }
