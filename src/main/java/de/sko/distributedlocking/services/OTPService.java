@@ -6,6 +6,7 @@ import de.sko.distributedlocking.repositories.OTPRepository;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.integration.jdbc.lock.JdbcLockRegistry;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class OTPService
    private final OTPRepository otpRepository;
 
    OTPService(
-      @Qualifier("otpLockRegistry") JdbcLockRegistry otpLockRegistry,
+      @Qualifier( "otpLockRegistry" ) JdbcLockRegistry otpLockRegistry,
       OTPRepository otpRepository )
    {
       this.otpLockRegistry = otpLockRegistry;
@@ -39,7 +40,8 @@ public class OTPService
    }
 
    /**
-    * Maybe a bit too expensive to initialize {@link SecureRandom} for every OTP generation
+    * Maybe a bit too expensive to initialize {@link SecureRandom} for every OTP generation,
+    * but it is acceptable for this demo.
     */
    private String generateOTP()
    {
@@ -48,29 +50,29 @@ public class OTPService
       return String.format( "%06d", secureRandom.nextInt( RANDOM_BOUND ) );
    }
 
-   public boolean isOneTimePasswordValid(
-      String clientId,
-      String otp )
+   public boolean isOneTimePasswordValid( String clientId, String otp )
    {
       var otpLock = otpLockRegistry.obtain( clientId );
       otpLock.lock();
       try {
-         final var currentClientOtp = otpRepository.findByClientIdAndOtp( clientId, otp );
-         if( !currentClientOtp.map( OTP::isValid ).orElse( false ) ) {
+         final Optional< OTP > currentClientOtp =
+            otpRepository.findByClientIdAndOtp( clientId, otp );
+         if( currentClientOtp.isEmpty() || !currentClientOtp.get().isValid() ) {
             return false;
          }
 
-         currentClientOtp.ifPresent(
-            theOtp -> {
-               theOtp.setValid( false );
-               otpRepository.save( theOtp );
-            }
-         );
+         invalidateOtp( currentClientOtp.get() );
 
          return true;
       }
       finally {
          otpLock.unlock();
       }
+   }
+
+   private void invalidateOtp( final OTP otp )
+   {
+      otp.setValid( false );
+      otpRepository.save( otp );
    }
 }

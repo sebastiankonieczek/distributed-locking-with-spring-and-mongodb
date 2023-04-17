@@ -22,6 +22,7 @@ For gradle simply execute:
 See file `lock-test.http`. 
 
 If you are using intellij idea IDE, you can simply execute the http requests.
+
 But before you must set the port of the application in the `http-client.env.json` file.
 
 You can find the applications server port in the Spring logs, for example:
