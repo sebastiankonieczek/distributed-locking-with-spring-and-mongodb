@@ -61,6 +61,10 @@ public class MongoLockRepository
 
       try {
          final Instant creationTime = Instant.now();
+         if( renew( lock ) ) {
+            return true;
+         }
+
          internalLockRepository.insert( new Lock( lock, region, clientId, creationTime, creationTime.plusMillis( ttlMillis ) ) );
          return true;
       }
@@ -72,7 +76,19 @@ public class MongoLockRepository
    @Override
    public boolean renew( final String lock )
    {
-      // not implemented
+      if( isAcquired( lock ) ) {
+         // update internal lock
+         final Instant creationTime = Instant.now();
+         try {
+            internalLockRepository.save( new Lock( lock, region, clientId, creationTime, creationTime.plusMillis( ttlMillis ) ) );
+         }
+         catch( DuplicateKeyException duplicateKeyException ) {
+            return false;
+         }
+
+         return true;
+      }
+
       return false;
    }
 
